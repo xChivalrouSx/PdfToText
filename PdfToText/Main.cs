@@ -3,22 +3,34 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using IronOcr;
+using Xceed.Words.NET;
 
 namespace PdfToText
 {
-    public partial class Form1 : Form
+    public partial class Main : Form
     {
         private const string NEW_LINE_FOR_REMOVE = "\r\n\r\n";
         private const string STRING_SPACE = " ";
 
-        public Form1()
+        private const string CAN_NOT_CREATE_WORD = "Can not create a word file.";
+        private const string ERROR_MORE_FILE = "Please drop only one file.";
+
+        public Main()
         {
             InitializeComponent();
+        }
+
+        #region[ - Event Handlers - ]
+
+        private void Main_Load(object sender, EventArgs e)
+        {
+            label_drag_drop.AllowDrop = true;
         }
 
         private void btn_add_Click(object sender, EventArgs e)
@@ -38,7 +50,7 @@ namespace PdfToText
 
         private void btn_get_text_Click(object sender, EventArgs e)
         {
-            if(!tbx_file.Text.Equals(""))
+            if (!tbx_file.Text.Equals(""))
             {
                 string str = Ocr(tbx_file.Text);
                 //Result result = new Result(newSTR);
@@ -50,6 +62,55 @@ namespace PdfToText
 
             }
         }
+
+        private void btn_save_word_Click(object sender, EventArgs e)
+        {
+            if (!tbx_file.Text.Equals(""))
+            {
+                string str = Ocr(tbx_file.Text);
+
+                string removedSTR = RemoveNewLines(str);
+
+                SaveFileDialog sfd = new SaveFileDialog();
+                sfd.Filter = "Word Documents|*.doc";
+
+                DialogResult result = sfd.ShowDialog();
+                if (result == DialogResult.OK)
+                {
+                    CreateWordFile(sfd.FileName, removedSTR);
+                }
+            }
+        }
+
+        private void label_drag_drop_DragEnter(object sender, DragEventArgs e)
+        {
+            e.Effect = DragDropEffects.Copy;
+        }
+
+        private void label_DragDrop(object sender, DragEventArgs e)
+        {
+            string[] fileList = (string[])e.Data.GetData(DataFormats.FileDrop, false);
+
+            if (fileList.Length > 1)
+            {
+                ShowMessage(ERROR_MORE_FILE);
+                return;
+            }
+
+            foreach (string file in fileList)
+            {
+                string extension = Path.GetExtension(file);
+                extension = extension.ToLower();
+                if (extension.Equals(".pdf"))
+                {
+                    tbx_file.Text = file;
+                }
+            }
+        }
+
+        #endregion
+
+        #region[ - Private Methods - ]
 
         private string Ocr(string path)
         {
@@ -104,5 +165,33 @@ namespace PdfToText
 
             return str;
         }
+
+        private void CreateWordFile(string path, string text)
+        {
+            try
+            {
+                DocX doc = DocX.Create(path);
+                doc.InsertParagraph(text);
+                doc.Save();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                ShowMessage(CAN_NOT_CREATE_WORD);
+            }
+        }
+
+        private void ShowMessage(string message)
+        {
+            MessageBox.Show(message);
+        }
+
+
+
+
+
+        #endregion
+
+        
     }
 }

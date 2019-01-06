@@ -1,4 +1,4 @@
-# Pdf-to-Text
+# PdfToText
 ### An application to extract text from pdf files
 ---
 The application allows:

@@ -16,10 +16,8 @@ namespace PdfToText
     public partial class Main : Form
     {
         private const string NEW_LINE_FOR_REMOVE = "\r\n\r\n";
-        private const string STRING_SPACE = " ";
 
         private const string CAN_NOT_CREATE_WORD = "Can not create a word file.";
-        private const string ERROR_MORE_FILE = "Please drop only one file.";
 
         public Main()
         {
@@ -28,15 +26,10 @@ namespace PdfToText
 
         #region[ - Event Handlers - ]
 
-        private void Main_Load(object sender, EventArgs e)
-        {
-            label_drag_drop.AllowDrop = true;
-        }
-
         private void btn_add_Click(object sender, EventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog();
-            ofd.Filter = "Pdf Files|*.pdf";
+            ofd.Filter = "Files|*.pdf;*.png;*.jpg";
 
             DialogResult result = ofd.ShowDialog();
             if (result == DialogResult.OK)
@@ -78,32 +71,6 @@ namespace PdfToText
                 if (result == DialogResult.OK)
                 {
                     CreateWordFile(sfd.FileName, removedSTR);
-                }
-            }
-        }
-
-        private void label_drag_drop_DragEnter(object sender, DragEventArgs e)
-        {
-            e.Effect = DragDropEffects.Copy;
-        }
-
-        private void label_DragDrop(object sender, DragEventArgs e)
-        {
-            string[] fileList = (string[])e.Data.GetData(DataFormats.FileDrop, false);
-
-            if (fileList.Length > 1)
-            {
-                ShowMessage(ERROR_MORE_FILE);
-                return;
-            }
-
-            foreach (string file in fileList)
-            {
-                string extension = Path.GetExtension(file);
-                extension = extension.ToLower();
-                if (extension.Equals(".pdf"))
-                {
-                    tbx_file.Text = file;
                 }
             }
         }
@@ -186,12 +153,7 @@ namespace PdfToText
             MessageBox.Show(message);
         }
 
-
-
-
-
         #endregion
-
-        
+ 
     }
 }
